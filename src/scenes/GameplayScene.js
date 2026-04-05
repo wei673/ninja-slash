@@ -176,6 +176,12 @@ export class GameplayScene extends Phaser.Scene {
     });
   }
 
+  getSpawnArea() {
+    if (!this.touchKeyboard) return SPAWN_AREA;
+    const selectedRow = this.registry.get('selectedRow');
+    return { ...SPAWN_AREA, yMax: selectedRow === 'all' ? 0.35 : 0.48 };
+  }
+
   spawnNextFruit() {
     if (this.levelComplete) return;
 
@@ -185,9 +191,7 @@ export class GameplayScene extends Phaser.Scene {
     }
 
     const letter = Phaser.Utils.Array.GetRandom(this.letters);
-    const spawnArea = this.touchKeyboard
-      ? { ...SPAWN_AREA, yMax: 0.48 }
-      : SPAWN_AREA;
+    const spawnArea = this.getSpawnArea();
     this.currentFruit = new Fruit(this, letter, spawnArea);
     this.fruitsSpawned++;
 
@@ -211,9 +215,7 @@ export class GameplayScene extends Phaser.Scene {
 
   spawnBomb() {
     const letter = Phaser.Utils.Array.GetRandom(this.letters);
-    const spawnArea = this.touchKeyboard
-      ? { ...SPAWN_AREA, yMax: 0.48 }
-      : SPAWN_AREA;
+    const spawnArea = this.getSpawnArea();
     this.currentBomb = new Bomb(this, letter, spawnArea);
     this.lastBombTime = this.time.now;
 
