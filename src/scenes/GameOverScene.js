@@ -89,7 +89,7 @@ export class GameOverScene extends Phaser.Scene {
 
     // Percentile bar
     const barY = panelY + 40;
-    this.add.text(panelX, barY - 10, `You're faster than ${stats.percentile}% of players!`, {
+    this.add.text(panelX, barY - 10, `Faster than ${stats.percentile}% of kids worldwide!`, {
       fontFamily: 'Arial', fontSize: '15px', color: '#ffd700', fontStyle: 'bold',
     }).setOrigin(0.5);
 

@@ -153,7 +153,7 @@ export class VictoryScene extends Phaser.Scene {
 
     // Percentile — center, larger
     const pctColor = stats.percentile > 75 ? '#2ecc71' : stats.percentile > 50 ? '#f39c12' : '#e74c3c';
-    this.add.text(panelX, panelY + 30, `Faster than ${stats.percentile}% of players!`, {
+    this.add.text(panelX, panelY + 30, `Faster than ${stats.percentile}% of kids worldwide!`, {
       fontFamily: 'Arial', fontSize: '17px', color: '#ffd700', fontStyle: 'bold',
     }).setOrigin(0.5);
 

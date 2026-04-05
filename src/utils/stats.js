@@ -30,22 +30,23 @@ export function calculateStats(registry) {
 }
 
 /**
- * Map typing speed (letters/min) to a percentile using a sigmoid-like curve.
- * Calibrated for kids playing a letter-at-a-time game:
- *   ~10 lpm = very slow (10th percentile)
- *   ~30 lpm = below average (30th)
- *   ~50 lpm = average (50th)
- *   ~80 lpm = above average (75th)
- *   ~120 lpm = fast (90th)
- *   ~160+ lpm = very fast (99th)
+ * Map typing speed (letters/min) to a percentile among kids (ages 5-12).
+ * Based on global averages for children's single-key typing speed:
+ *   ~5 lpm  = just starting (5th percentile)
+ *   ~12 lpm = slow (20th)
+ *   ~20 lpm = below average (35th)
+ *   ~30 lpm = average kid (50th)
+ *   ~45 lpm = above average (70th)
+ *   ~60 lpm = fast kid (85th)
+ *   ~80 lpm = very fast (95th)
+ *   ~100+ lpm = exceptional (99th)
  */
 function speedToPercentile(speed) {
   if (speed <= 0) return 0;
 
-  // Sigmoid curve centered around 50 lpm
-  // p = 100 / (1 + e^(-k*(speed - midpoint)))
-  const midpoint = 50;
-  const k = 0.045;
+  // Sigmoid curve centered around 30 lpm (average for kids)
+  const midpoint = 30;
+  const k = 0.065;
   const raw = 100 / (1 + Math.exp(-k * (speed - midpoint)));
 
   return Math.min(99, Math.max(1, Math.round(raw)));
