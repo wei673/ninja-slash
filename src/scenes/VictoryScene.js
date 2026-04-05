@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT } from '../config/gameConfig.js';
 import { CHARACTERS } from '../config/characters.js';
 import { playVictory } from '../utils/audio.js';
+import { calculateStats } from '../utils/stats.js';
 
 export class VictoryScene extends Phaser.Scene {
   constructor() {
@@ -73,19 +74,20 @@ export class VictoryScene extends Phaser.Scene {
       delay: 400,
     });
 
-    // Trophy
-    this.createTrophy(GAME_WIDTH / 2, 310);
+    // Stats panel
+    const stats = calculateStats(this.registry);
+    this.createStatsPanel(stats);
 
     // Dancing ninja
     const characterId = this.registry.get('selectedCharacter') || 'cat';
-    this.createDancingNinja(GAME_WIDTH / 2 - 150, 420, characterId);
-    this.createDancingNinja(GAME_WIDTH / 2 + 150, 420, characterId);
+    this.createDancingNinja(GAME_WIDTH / 2 - 180, 500, characterId);
+    this.createDancingNinja(GAME_WIDTH / 2 + 180, 500, characterId);
 
     // Leaderboard button
     const btnX = GAME_WIDTH / 2;
-    const btnY = 580;
+    const btnY = 640;
     const btnW = 280;
-    const btnH = 55;
+    const btnH = 50;
 
     const btn = this.add.graphics();
     btn.fillStyle(0x3498db, 1);
@@ -114,6 +116,62 @@ export class VictoryScene extends Phaser.Scene {
     hit.on('pointerdown', () => {
       this.scene.start('Leaderboard');
     });
+  }
+
+  createStatsPanel(stats) {
+    const panelX = GAME_WIDTH / 2;
+    const panelY = 345;
+    const panelW = 500;
+    const panelH = 150;
+
+    const panel = this.add.graphics();
+    panel.fillStyle(0x000000, 0.4);
+    panel.fillRoundedRect(panelX - panelW / 2, panelY - panelH / 2, panelW, panelH, 12);
+
+    // Speed
+    this.add.text(panelX - 150, panelY - 50, 'Speed', {
+      fontFamily: 'Arial', fontSize: '13px', color: '#8899aa',
+    }).setOrigin(0.5);
+    this.add.text(panelX - 150, panelY - 25, `${stats.speed}`, {
+      fontFamily: 'Arial Black, Arial', fontSize: '32px', color: '#ffffff',
+    }).setOrigin(0.5);
+    this.add.text(panelX - 150, panelY + 2, 'letters/min', {
+      fontFamily: 'Arial', fontSize: '11px', color: '#666677',
+    }).setOrigin(0.5);
+
+    // Error rate
+    this.add.text(panelX + 150, panelY - 50, 'Error Rate', {
+      fontFamily: 'Arial', fontSize: '13px', color: '#8899aa',
+    }).setOrigin(0.5);
+    this.add.text(panelX + 150, panelY - 25, `${stats.errorRate}%`, {
+      fontFamily: 'Arial Black, Arial', fontSize: '32px',
+      color: stats.errorRate > 30 ? '#e74c3c' : stats.errorRate > 15 ? '#f39c12' : '#2ecc71',
+    }).setOrigin(0.5);
+    this.add.text(panelX + 150, panelY + 2, 'wrong presses', {
+      fontFamily: 'Arial', fontSize: '11px', color: '#666677',
+    }).setOrigin(0.5);
+
+    // Percentile — center, larger
+    const pctColor = stats.percentile > 75 ? '#2ecc71' : stats.percentile > 50 ? '#f39c12' : '#e74c3c';
+    this.add.text(panelX, panelY + 30, `Faster than ${stats.percentile}% of players!`, {
+      fontFamily: 'Arial', fontSize: '17px', color: '#ffd700', fontStyle: 'bold',
+    }).setOrigin(0.5);
+
+    // Percentile bar
+    const barW = 350;
+    const barH = 10;
+    const barStartX = panelX - barW / 2;
+    const barBgY = panelY + 52;
+
+    const barBg = this.add.graphics();
+    barBg.fillStyle(0x333344, 1);
+    barBg.fillRoundedRect(barStartX, barBgY, barW, barH, 4);
+
+    const fillW = barW * (stats.percentile / 100);
+    const barFillColor = stats.percentile > 75 ? 0x2ecc71 : stats.percentile > 50 ? 0xf39c12 : 0xe74c3c;
+    const barFill = this.add.graphics();
+    barFill.fillStyle(barFillColor, 1);
+    barFill.fillRoundedRect(barStartX, barBgY, Math.max(4, fillW), barH, 4);
   }
 
   createTrophy(x, y) {

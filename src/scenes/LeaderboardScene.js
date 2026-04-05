@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT } from '../config/gameConfig.js';
+import { calculateStats } from '../utils/stats.js';
 
 const STORAGE_KEY = 'ninjaSlashLeaderboard';
 const MAX_ENTRIES = 10;
@@ -10,21 +11,9 @@ export class LeaderboardScene extends Phaser.Scene {
   }
 
   create() {
-    // Calculate stats
-    const totalCorrect = this.registry.get('totalCorrect');
-    const totalWrong = this.registry.get('totalWrong');
-    const totalMisses = this.registry.get('totalMisses');
-    const totalBombHits = this.registry.get('totalBombHits');
-    const gameStartTime = this.registry.get('gameStartTime');
-    const totalTimeMs = Date.now() - gameStartTime;
-    const totalTimeMin = totalTimeMs / 60000;
-
-    // Typing speed: correct letters per minute
-    const speed = totalTimeMin > 0 ? Math.round(totalCorrect / totalTimeMin) : 0;
-
-    // Accuracy: correct / (correct + wrong + bomb hits)
-    const totalPresses = totalCorrect + totalWrong + totalBombHits;
-    const accuracy = totalPresses > 0 ? Math.round((totalCorrect / totalPresses) * 100) : 0;
+    const stats = calculateStats(this.registry);
+    const speed = stats.speed;
+    const accuracy = stats.accuracy;
 
     this.playerSpeed = speed;
     this.playerAccuracy = accuracy;
