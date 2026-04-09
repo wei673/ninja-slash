@@ -2,14 +2,14 @@ import Phaser from 'phaser';
 import { SPAWN_AREA, GAME_WIDTH, GAME_HEIGHT } from '../config/gameConfig.js';
 
 const FRUIT_TYPES = [
-  { name: 'apple',      color: 0xe74c3c, highlight: 0xff6b6b, leafColor: 0x27ae60, juiceColor: 0xff4444 },
-  { name: 'orange',     color: 0xf39c12, highlight: 0xf5b041, leafColor: 0x27ae60, juiceColor: 0xffa500 },
-  { name: 'watermelon', color: 0x2ecc71, highlight: 0x58d68d, leafColor: null,      juiceColor: 0xff6b6b },
-  { name: 'grape',      color: 0x9b59b6, highlight: 0xbb8fce, leafColor: 0x27ae60, juiceColor: 0xc39bd3 },
-  { name: 'mango',      color: 0xe67e22, highlight: 0xf0b27a, leafColor: 0x27ae60, juiceColor: 0xffc04d },
-  { name: 'blueberry',  color: 0x3498db, highlight: 0x5dade2, leafColor: null,      juiceColor: 0x5dade2 },
-  { name: 'strawberry', color: 0xc0392b, highlight: 0xe74c3c, leafColor: 0x27ae60, juiceColor: 0xff4444 },
-  { name: 'lemon',      color: 0xf1c40f, highlight: 0xf7dc6f, leafColor: 0x27ae60, juiceColor: 0xfff44d },
+  { name: 'apple',      emoji: '\ud83c\udf4e', color: 0xe74c3c, juiceColor: 0xff4444 },
+  { name: 'orange',     emoji: '\ud83c\udf4a', color: 0xf39c12, juiceColor: 0xffa500 },
+  { name: 'watermelon', emoji: '\ud83c\udf49', color: 0x2ecc71, juiceColor: 0xff6b6b },
+  { name: 'grape',      emoji: '\ud83c\udf47', color: 0x9b59b6, juiceColor: 0xc39bd3 },
+  { name: 'mango',      emoji: '\ud83e\udd6d', color: 0xe67e22, juiceColor: 0xffc04d },
+  { name: 'banana',     emoji: '\ud83c\udf4c', color: 0xf1c40f, juiceColor: 0xfff44d },
+  { name: 'strawberry', emoji: '\ud83c\udf53', color: 0xc0392b, juiceColor: 0xff4444 },
+  { name: 'lemon',      emoji: '\ud83c\udf4b', color: 0xf1c40f, juiceColor: 0xfff44d },
 ];
 
 const FRUIT_RADIUS = 42;
@@ -32,52 +32,11 @@ export class Fruit extends Phaser.GameObjects.Container {
     const fruitType = Phaser.Utils.Array.GetRandom(FRUIT_TYPES);
     this.fruitType = fruitType;
 
-    // Fruit body
-    const body = scene.add.graphics();
-    body.fillStyle(fruitType.color, 1);
-    body.fillCircle(0, 0, FRUIT_RADIUS);
-    this.add(body);
-
-    // Highlight (shine effect)
-    const highlight = scene.add.graphics();
-    highlight.fillStyle(fruitType.highlight, 0.5);
-    highlight.fillEllipse(-12, -14, 18, 12);
-    this.add(highlight);
-
-    // Leaf/stem on top (if applicable)
-    if (fruitType.leafColor) {
-      const stem = scene.add.graphics();
-      stem.lineStyle(3, 0x6B4226, 1);
-      stem.lineBetween(0, -FRUIT_RADIUS + 5, 2, -FRUIT_RADIUS - 5);
-      stem.fillStyle(fruitType.leafColor, 1);
-      stem.fillEllipse(8, -FRUIT_RADIUS + 2, 14, 8);
-      this.add(stem);
-    }
-
-    // Watermelon stripes
-    if (fruitType.name === 'watermelon') {
-      const stripes = scene.add.graphics();
-      stripes.lineStyle(3, 0x1a9c54, 0.5);
-      for (let i = -2; i <= 2; i++) {
-        const sx = i * 14;
-        stripes.beginPath();
-        stripes.moveTo(sx, -FRUIT_RADIUS + 10);
-        stripes.lineTo(sx + 3, FRUIT_RADIUS - 10);
-        stripes.strokePath();
-      }
-      this.add(stripes);
-    }
-
-    // Strawberry seeds
-    if (fruitType.name === 'strawberry') {
-      const seeds = scene.add.graphics();
-      seeds.fillStyle(0xf1c40f, 0.7);
-      const seedPositions = [[-8, -8], [8, -5], [-5, 8], [10, 10], [0, 0], [-12, 5]];
-      seedPositions.forEach(([sx, sy]) => {
-        seeds.fillEllipse(sx, sy, 3, 4);
-      });
-      this.add(seeds);
-    }
+    // Fruit emoji
+    const emojiText = scene.add.text(0, 0, fruitType.emoji, {
+      fontSize: `${FRUIT_RADIUS * 2}px`,
+    }).setOrigin(0.5);
+    this.add(emojiText);
 
     // White circle behind letter
     const letterBg = scene.add.graphics();

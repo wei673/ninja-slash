@@ -13,17 +13,69 @@ export class TitleScene extends Phaser.Scene {
     bg.fillGradientStyle(0x1a1a2e, 0x1a1a2e, 0x16213e, 0x16213e, 1);
     bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-    // Title
-    const title = this.add.text(GAME_WIDTH / 2, 200, 'NINJA SLASH', {
+    // Title — split into NINJA / fruit / SLASH
+    const titleStyle = {
       fontFamily: 'Arial Black, Arial',
       fontSize: '72px',
       color: '#ffd700',
       stroke: '#000000',
       strokeThickness: 8,
-    }).setOrigin(0.5);
+    };
 
+    const ninjaText = this.add.text(GAME_WIDTH / 2, 120, 'NINJA', titleStyle).setOrigin(0.5);
+    const slashText = this.add.text(GAME_WIDTH / 2, 280, 'SLASH', titleStyle).setOrigin(0.5);
+
+    // Slashed fruit between the two words
+    const fruits = ['\ud83c\udf4e', '\ud83c\udf4a', '\ud83c\udf49', '\ud83c\udf47', '\ud83e\udd6d', '\ud83c\udf4c', '\ud83c\udf53', '\ud83c\udf4b'];
+    const fruit = Phaser.Utils.Array.GetRandom(fruits);
+    const fruitContainer = this.add.container(GAME_WIDTH / 2, 200);
+
+    const fruitEmoji = this.add.text(0, 0, fruit, { fontSize: '64px' }).setOrigin(0.5);
+    fruitContainer.add(fruitEmoji);
+
+    // Diagonal slash line across the fruit
+    const slashLine = this.add.graphics();
+    slashLine.lineStyle(4, 0xffffff, 0.9);
+    slashLine.lineBetween(-40, 25, 40, -25);
+    fruitContainer.add(slashLine);
+
+    // Blade/katana — angled along the slash
+    const blade = this.add.graphics();
+    // Blade body
+    blade.fillStyle(0xcccccc, 1);
+    blade.beginPath();
+    blade.moveTo(30, -18);
+    blade.lineTo(70, -38);
+    blade.lineTo(73, -35);
+    blade.lineTo(33, -15);
+    blade.closePath();
+    blade.fillPath();
+    // Blade edge highlight
+    blade.lineStyle(1, 0xffffff, 0.6);
+    blade.lineBetween(30, -18, 70, -38);
+    // Handle
+    blade.fillStyle(0x8B4513, 1);
+    blade.fillRect(22, -14, 14, 6);
+    // Guard
+    blade.fillStyle(0xffd700, 1);
+    blade.fillRect(20, -15, 4, 8);
+    fruitContainer.add(blade);
+
+    // Two halves separating — left half drifts down-left, right half drifts down-right
+    const leftHalf = this.add.text(-8, 4, fruit, { fontSize: '64px' }).setOrigin(0.5);
+    leftHalf.setCrop(0, 0, leftHalf.width / 2, leftHalf.height);
+    leftHalf.setAlpha(0.5);
+    fruitContainer.add(leftHalf);
+
+    const rightHalf = this.add.text(8, -4, fruit, { fontSize: '64px' }).setOrigin(0.5);
+    rightHalf.setCrop(rightHalf.width / 2, 0, rightHalf.width / 2, rightHalf.height);
+    rightHalf.setAlpha(0.5);
+    fruitContainer.add(rightHalf);
+
+    // Animate the title group
+    const titleGroup = this.add.container(0, 0, [ninjaText, fruitContainer, slashText]);
     this.tweens.add({
-      targets: title,
+      targets: titleGroup,
       scale: 1.05,
       duration: 1200,
       yoyo: true,
@@ -32,7 +84,7 @@ export class TitleScene extends Phaser.Scene {
     });
 
     // Subtitle
-    this.add.text(GAME_WIDTH / 2, 290, 'A Typing Adventure!', {
+    this.add.text(GAME_WIDTH / 2, 350, 'A Typing Adventure!', {
       fontFamily: 'Arial',
       fontSize: '24px',
       color: '#aaaacc',
@@ -125,6 +177,61 @@ export class TitleScene extends Phaser.Scene {
     this.createDecoNinja(180, 620, 0xe74c3c);
     this.createDecoNinja(512, 650, 0x3498db);
     this.createDecoNinja(844, 620, 0xf39c12);
+
+    // Creator credit
+    this.add.text(GAME_WIDTH / 2, 710, 'Created by Alison Rainbow', {
+      fontFamily: 'Arial',
+      fontSize: '14px',
+      color: '#8888aa',
+    }).setOrigin(0.5);
+
+    // Bookmark button
+    const bmY = 740;
+    const bmBtn = this.add.graphics();
+    bmBtn.fillStyle(0x3498db, 1);
+    bmBtn.fillRoundedRect(GAME_WIDTH / 2 - 70, bmY - 14, 140, 28, 6);
+
+    const bmText = this.add.text(GAME_WIDTH / 2, bmY, '\ud83d\udd16 Bookmark', {
+      fontFamily: 'Arial',
+      fontSize: '14px',
+      color: '#ffffff',
+    }).setOrigin(0.5);
+
+    const bmHit = this.add.rectangle(GAME_WIDTH / 2, bmY, 140, 28)
+      .setInteractive({ useHandCursor: true })
+      .setAlpha(0.001);
+
+    bmHit.on('pointerover', () => {
+      bmBtn.clear();
+      bmBtn.fillStyle(0x2980b9, 1);
+      bmBtn.fillRoundedRect(GAME_WIDTH / 2 - 70, bmY - 14, 140, 28, 6);
+    });
+    bmHit.on('pointerout', () => {
+      bmBtn.clear();
+      bmBtn.fillStyle(0x3498db, 1);
+      bmBtn.fillRoundedRect(GAME_WIDTH / 2 - 70, bmY - 14, 140, 28, 6);
+    });
+    bmHit.on('pointerdown', () => {
+      // Browsers don't allow programmatic bookmarking — show a helpful tip
+      const isMac = /Mac|iPad|iPhone/.test(navigator.userAgent);
+      const tip = isMac
+        ? 'Press \u2318+D to bookmark this page!'
+        : 'Press Ctrl+D to bookmark this page!';
+      const msg = this.add.text(GAME_WIDTH / 2, bmY - 35, tip, {
+        fontFamily: 'Arial',
+        fontSize: '13px',
+        color: '#ffffff',
+        backgroundColor: '#333355',
+        padding: { x: 10, y: 6 },
+      }).setOrigin(0.5);
+      this.tweens.add({
+        targets: msg,
+        alpha: 0,
+        delay: 2500,
+        duration: 500,
+        onComplete: () => msg.destroy(),
+      });
+    });
   }
 
   resetStats() {

@@ -1,16 +1,15 @@
 import Phaser from 'phaser';
 import { SPAWN_AREA, GAME_WIDTH, GAME_HEIGHT } from '../config/gameConfig.js';
 
-// Reuse the same fruit types so bombs look like real fruits
 const FRUIT_TYPES = [
-  { name: 'apple',      color: 0xe74c3c, highlight: 0xff6b6b, leafColor: 0x27ae60 },
-  { name: 'orange',     color: 0xf39c12, highlight: 0xf5b041, leafColor: 0x27ae60 },
-  { name: 'watermelon', color: 0x2ecc71, highlight: 0x58d68d, leafColor: null },
-  { name: 'grape',      color: 0x9b59b6, highlight: 0xbb8fce, leafColor: 0x27ae60 },
-  { name: 'mango',      color: 0xe67e22, highlight: 0xf0b27a, leafColor: 0x27ae60 },
-  { name: 'blueberry',  color: 0x3498db, highlight: 0x5dade2, leafColor: null },
-  { name: 'strawberry', color: 0xc0392b, highlight: 0xe74c3c, leafColor: 0x27ae60 },
-  { name: 'lemon',      color: 0xf1c40f, highlight: 0xf7dc6f, leafColor: 0x27ae60 },
+  { name: 'apple',      emoji: '\ud83c\udf4e' },
+  { name: 'orange',     emoji: '\ud83c\udf4a' },
+  { name: 'watermelon', emoji: '\ud83c\udf49' },
+  { name: 'grape',      emoji: '\ud83c\udf47' },
+  { name: 'mango',      emoji: '\ud83e\udd6d' },
+  { name: 'banana',     emoji: '\ud83c\udf4c' },
+  { name: 'strawberry', emoji: '\ud83c\udf53' },
+  { name: 'lemon',      emoji: '\ud83c\udf4b' },
 ];
 
 const FRUIT_RADIUS = 42;
@@ -33,46 +32,29 @@ export class Bomb extends Phaser.GameObjects.Container {
 
     const fruitType = Phaser.Utils.Array.GetRandom(FRUIT_TYPES);
 
-    // Fruit body — looks exactly like a real fruit
-    const body = scene.add.graphics();
-    body.fillStyle(fruitType.color, 1);
-    body.fillCircle(0, 0, FRUIT_RADIUS);
-    this.add(body);
+    // Fruit emoji — looks exactly like a real fruit
+    const emojiText = scene.add.text(0, 0, fruitType.emoji, {
+      fontSize: `${FRUIT_RADIUS * 2}px`,
+    }).setOrigin(0.5);
+    this.add(emojiText);
 
-    // Highlight (same as real fruit)
-    const highlight = scene.add.graphics();
-    highlight.fillStyle(fruitType.highlight, 0.5);
-    highlight.fillEllipse(-12, -14, 18, 12);
-    this.add(highlight);
-
-    // Leaf/stem — same as real fruit
-    if (fruitType.leafColor) {
-      const stem = scene.add.graphics();
-      stem.lineStyle(3, 0x6B4226, 1);
-      stem.lineBetween(0, -FRUIT_RADIUS + 5, 2, -FRUIT_RADIUS - 5);
-      stem.fillStyle(fruitType.leafColor, 1);
-      stem.fillEllipse(8, -FRUIT_RADIUS + 2, 14, 8);
-      this.add(stem);
-    }
-
-    // The wire/fuse poking out the top — longer and more visible
+    // Fuse poking out the top
     const fuse = scene.add.graphics();
-    const fuseStartX = fruitType.leafColor ? -6 : 0;
     const fuseStartY = -FRUIT_RADIUS + 3;
     fuse.lineStyle(2.5, 0x555555, 0.85);
     fuse.beginPath();
-    fuse.moveTo(fuseStartX, fuseStartY);
-    fuse.lineTo(fuseStartX - 5, fuseStartY - 10);
-    fuse.lineTo(fuseStartX + 4, fuseStartY - 18);
-    fuse.lineTo(fuseStartX - 3, fuseStartY - 26);
-    fuse.lineTo(fuseStartX + 2, fuseStartY - 32);
+    fuse.moveTo(0, fuseStartY);
+    fuse.lineTo(-5, fuseStartY - 10);
+    fuse.lineTo(4, fuseStartY - 18);
+    fuse.lineTo(-3, fuseStartY - 26);
+    fuse.lineTo(2, fuseStartY - 32);
     fuse.strokePath();
 
     // Spark at tip
     fuse.fillStyle(0xff8800, 0.7);
-    fuse.fillCircle(fuseStartX + 2, fuseStartY - 32, 3);
+    fuse.fillCircle(2, fuseStartY - 32, 3);
     fuse.fillStyle(0xffcc00, 0.5);
-    fuse.fillCircle(fuseStartX + 2, fuseStartY - 32, 5);
+    fuse.fillCircle(2, fuseStartY - 32, 5);
     this.add(fuse);
 
     // White circle behind letter — same as fruit
