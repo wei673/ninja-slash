@@ -133,6 +133,7 @@ export class TitleScene extends Phaser.Scene {
     this.registry.set('totalBombHits', 0);
     this.registry.set('totalMisses', 0);
     this.registry.set('gameStartTime', 0);
+    this.registry.set('activeTypingMs', 0);
   }
 
   createDecoNinja(x, y, color) {

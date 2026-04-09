@@ -329,6 +329,10 @@ export class GameplayScene extends Phaser.Scene {
     this.hud.setFruitCount(this.fruitsSlashed);
     this.registry.set('totalCorrect', this.registry.get('totalCorrect') + 1);
 
+    // Accumulate reaction time for accurate speed calculation
+    const reactionMs = this.time.now - this.fruitStartTime;
+    this.registry.set('activeTypingMs', this.registry.get('activeTypingMs') + reactionMs);
+
     this.time.delayedCall(INPUT_LOCK_MS, () => {
       this.inputLocked = false;
     });

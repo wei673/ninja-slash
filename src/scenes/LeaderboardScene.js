@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT } from '../config/gameConfig.js';
 import { calculateStats } from '../utils/stats.js';
+import { isTouchDevice } from '../utils/touchKeyboard.js';
 
 const STORAGE_KEY = 'ninjaSlashLeaderboard';
 const MAX_ENTRIES = 10;
@@ -78,6 +79,12 @@ export class LeaderboardScene extends Phaser.Scene {
     // Keyboard input for name
     this.input.keyboard.on('keydown', (event) => this.handleNameInput(event));
 
+    // On touch devices, overlay a real DOM <input> so the native keyboard appears
+    this.domInput = null;
+    if (isTouchDevice()) {
+      this.createDomInput(nameBoxX, nameBoxY, nameBoxW, nameBoxH);
+    }
+
     // Submit button
     const btnX = GAME_WIDTH / 2;
     const btnY = 200;
@@ -132,15 +139,72 @@ export class LeaderboardScene extends Phaser.Scene {
       playBtn.fillRoundedRect(GAME_WIDTH / 2 - 100, playBtnY - 22, 200, 44, 10);
     });
     playHit.on('pointerdown', () => {
+      this.destroyDomInput();
       this.registry.set('currentLevel', 1);
       this.scene.start('Title');
     });
+
+    // Clean up DOM input if scene is shut down externally
+    this.events.on('shutdown', () => this.destroyDomInput());
   }
 
   drawSubmitBtn(x, y, w, h, color) {
     this.submitBtn.clear();
     this.submitBtn.fillStyle(color, 1);
     this.submitBtn.fillRoundedRect(x - w / 2, y - h / 2, w, h, 8);
+  }
+
+  createDomInput(boxX, boxY, boxW, boxH) {
+    const canvas = this.game.canvas;
+    const canvasRect = canvas.getBoundingClientRect();
+    const scaleX = canvasRect.width / GAME_WIDTH;
+    const scaleY = canvasRect.height / GAME_HEIGHT;
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.maxLength = 15;
+    input.autocomplete = 'off';
+    input.autocapitalize = 'off';
+    input.spellcheck = false;
+
+    Object.assign(input.style, {
+      position: 'absolute',
+      left: `${canvasRect.left + (boxX - boxW / 2) * scaleX}px`,
+      top: `${canvasRect.top + (boxY - boxH / 2) * scaleY}px`,
+      width: `${boxW * scaleX}px`,
+      height: `${boxH * scaleY}px`,
+      fontSize: `${22 * scaleY}px`,
+      fontFamily: 'Arial',
+      color: 'transparent',
+      caretColor: 'white',
+      background: 'transparent',
+      border: 'none',
+      outline: 'none',
+      textAlign: 'center',
+      zIndex: '10',
+    });
+
+    input.addEventListener('input', () => {
+      this.playerName = input.value;
+      this.nameText.setText(this.playerName.length > 0 ? this.playerName : '|');
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        input.blur();
+        this.submitScore();
+      }
+    });
+
+    document.body.appendChild(input);
+    this.domInput = input;
+  }
+
+  destroyDomInput() {
+    if (this.domInput) {
+      this.domInput.remove();
+      this.domInput = null;
+    }
   }
 
   handleNameInput(event) {
@@ -166,6 +230,12 @@ export class LeaderboardScene extends Phaser.Scene {
     this.nameText.setText(this.playerName);
     this.tweens.killTweensOf(this.nameText);
     this.nameText.setAlpha(1);
+
+    // Disable DOM input after submission
+    if (this.domInput) {
+      this.domInput.disabled = true;
+      this.domInput.blur();
+    }
 
     // Dim submit button
     this.submitBtn.clear();
